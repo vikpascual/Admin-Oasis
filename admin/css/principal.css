@@ -1,0 +1,60 @@
+html{
+    height: 100%;
+}
+body{
+    height: 100%;
+    padding-left: 0.5%;
+    padding-right: 0.5%;
+    background-color: #070707;
+    color: #00ff3c;
+    font-family: 'Sen';
+}
+header{
+    display: block;
+    width: 100%;
+    height: 10%;
+    border-bottom: 2px solid #00ff3c;
+}
+h1{
+    font-size: 2vw;
+}
+.cabecera{
+    float: left;
+    width: 86.5%;
+}
+.logo{
+    width: 3.5%;
+}
+.logout{
+    width: 10%;
+    padding-top: 2%;
+}
+a{
+    color: #00ff3c;
+    text-decoration: none;
+}
+a.logo{
+    font-size: 1.5vw;
+    text-decoration: underline;
+}
+ a:visited{
+    color: #00ff3c;
+}
+/*LATERAL*/
+aside{
+    width: 10%;
+    margin-top: 1%;
+    display: block;
+    border-right: 2px solid #00ff3c;
+    height: 89%;
+    z-index: -999;
+    font-size: 1vw;
+}
+/* MAIN */
+main{
+    position: absolute;
+    width: 80%;
+    height: 100%;
+    top: 15%;
+    left: 15%;
+}
