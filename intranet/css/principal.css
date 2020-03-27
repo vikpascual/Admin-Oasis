@@ -1,0 +1,43 @@
+body {
+    height: 100%;
+    padding-left: 2.5%;
+    padding-right: 2.5%;
+}
+/*LOGIN*/
+#particles-js{
+    width: 100%; 
+    z-index: -999;
+}
+h3{
+    font-size: 3vw;
+    color: white;
+}
+form {
+    height: 100%;
+    text-align: center;
+}
+#login{
+    width: 25%;
+    height: 40%;
+    background-color: rgba(255, 255, 255, 0);
+    border-radius: 6px;
+    position: absolute;
+    top: 25%;
+    left: 38%;
+    font-size: 2vw;
+    overflow: hidden;
+}
+input{
+    width: 100%;
+    margin-top: 0%;
+    height: 10%;
+    border-radius: 5px;
+    border-style: none;
+    font-family: 'Sen';
+    font-size: 1.5vw;
+}
+input[type="submit"]{
+    background-color: #00A2E9;
+    color: white;
+    cursor: pointer;
+}
