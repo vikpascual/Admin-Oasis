@@ -1,5 +1,10 @@
 <aside>
-<a href="index.php?snmp=1">SNMP<br>
-<a href="index.php?ad=1"></a>Active Directory<br>
-<a href="index.php?virtualbox=1">Máquinas Virtuales</a>
+    <script>
+        function enviar(nombre) {
+            document.forms[nombre].submit();
+        }
+    </script>
+<form name="snmp" action="index.php" method="POST" onclick="enviar('snmp')"><span>SNMP</span><input type="hidden" name="servicio" value="snmp"></form>
+<form name="ad" action="index.php" method="POST" onclick="enviar('ad')"><span>Active Directory</span><input type="hidden" name="servicio" value="ad"></form>
+<form name="virtualbox" action="index.php" method="POST" onclick="enviar('virtualbox')"><span>Virtualbox</span><input type="hidden" name="servicio" value="virtualbox"></form>
 </aside>
