@@ -40,4 +40,5 @@ input[type="submit"]{
     background-color: #00ff3c;
     color: white;
     cursor: pointer;
+    border-style: solid;
 }

@@ -20,14 +20,16 @@ h1{
 }
 .cabecera{
     float: left;
-    width: 86.5%;
+    width: 13%;
 }
 .logo{
     width: 3.5%;
 }
 .logout{
-    width: 10%;
+    width: 5%;
+    font-size: 1vw;
     padding-top: 2%;
+    float: right;
 }
 a{
     color: #00ff3c;
@@ -50,6 +52,9 @@ aside{
     z-index: -999;
     font-size: 1vw;
 }
+aside form span{
+    cursor: pointer;
+}
 /* MAIN */
 main{
     position: absolute;
@@ -57,4 +62,64 @@ main{
     height: 100%;
     top: 15%;
     left: 15%;
+}
+
+/*SNMP*/
+table{
+    width: 50%;
+    border-collapse: collapse;
+    margin-bottom: 3%;
+}
+table, th, td {
+    border: 1px solid #00ff3c;
+    padding: 5px;
+    text-align: left;
+  }
+.add_comunidad{
+    border: 1px solid #00ff3c;
+    overflow: auto;
+    padding: 0.5%;
+}
+.add_comunidad div{ 
+    cursor: pointer;
+}
+.add_comunidad_formulario{
+    display: none;
+}
+.eliminar_comunidad{
+    border: 1px solid #00ff3c;
+    overflow: auto;
+    padding: 0.5%;
+}
+.eliminar_comunidad div{ 
+    cursor: pointer;
+}
+.eliminar_comunidad_formulario{
+    display: none;
+}
+.seguridad{
+    display: none;
+}
+.autenticacion{
+    display: none;
+}
+.privacidad{
+    display: none;
+}
+input[type="submit"]{
+    background-color: #00ff3c;
+    color: white;
+    cursor: pointer;
+    margin-top: 1%;
+}
+input{
+    border-style: none;
+    font-family: 'Sen';
+    margin-bottom: 1%;
+}
+input[type="submit"]{
+    background-color: #00ff3c;
+    color: black;
+    cursor: pointer;
+    border-style: none;
 }
