@@ -4,13 +4,11 @@ include 'includes/lateral.html';
 ?>
 <main>
 <?php
-if($_GET['virtualbox'] == 1){
+if(isset($_POST['servicio']) && $_POST['servicio'] == 'virtualbox'){
     include 'includes/virtualbox.php';
-}
-if($_GET['ad'] == 1){
+}elseif(isset($_POST['servicio']) && $_POST['servicio'] == 'ad'){
     include 'includes/ad.php';
-}
-if($_GET['snmp'] == 1){
+}elseif(isset($_POST['servicio']) && $_POST['servicio'] == 'snmp'){
     include 'includes/snmp.php';
 }
 ?>
