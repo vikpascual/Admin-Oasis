@@ -4,7 +4,9 @@
             document.forms[nombre].submit();
         }
     </script>
-<form name="snmp" action="index.php" method="POST" onclick="enviar('snmp')"><span>SNMP</span><input type="hidden" name="servicio" value="snmp"></form>
+<form name="equipos" action="index.php" method="POST" onclick="enviar('equipos')"><span>Equipos</span><input type="hidden" name="servicio" value="equipos"></form>
+<form name="snmp" action="index.php" method="POST" onclick="enviar('snmp')"><span>SNMP / WMI</span><input type="hidden" name="servicio" value="snmp"></form>
 <form name="ad" action="index.php" method="POST" onclick="enviar('ad')"><span>Active Directory</span><input type="hidden" name="servicio" value="ad"></form>
 <form name="virtualbox" action="index.php" method="POST" onclick="enviar('virtualbox')"><span>Virtualbox</span><input type="hidden" name="servicio" value="virtualbox"></form>
+
 </aside>
