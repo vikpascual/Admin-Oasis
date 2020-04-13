@@ -67,10 +67,11 @@ main{
 /*SNMP*/
 table{
     width: 50%;
-    border-collapse: collapse;
+    border-collapse: separate;
+  border-spacing: 0px;
     margin-bottom: 3%;
 }
-table, th, td {
+th, td {
     border: 1px solid #00ff3c;
     padding: 5px;
     text-align: left;
@@ -95,6 +96,28 @@ table, th, td {
     cursor: pointer;
 }
 .eliminar_comunidad_formulario{
+    display: none;
+}
+.add_wmi{
+    border: 1px solid #00ff3c;
+    overflow: auto;
+    padding: 0.5%;
+}
+.add_wmi div{
+    cursor: pointer;
+}
+.add_wmi_formulario{
+    display: none;
+}
+.eliminar_wmi{
+    border: 1px solid #00ff3c;
+    overflow: auto;
+    padding: 0.5%;
+}
+.eliminar_wmi div{
+    cursor: pointer;
+}
+.eliminar_wmi_formulario{
     display: none;
 }
 .seguridad{
@@ -122,4 +145,56 @@ input[type="submit"]{
     color: black;
     cursor: pointer;
     border-style: none;
+}
+/*equipos*/
+.titulo{
+    float: left;
+    width: 69%;
+}
+.opciones{
+    float: right;
+    width: 30%;
+    font-size: 1vw;
+
+}
+.opciones span{
+    border: 1px solid #00ff3c;
+    float: right;
+    width: 44%;
+    cursor: pointer;
+}
+.opciones form{
+    float: left;
+    width: 54%;
+}
+.opciones form input{
+    width: 100%;
+}
+.opciones form input::placeholder{
+    font-size: 1vw;
+}
+table#equipos{
+    width: 100%;
+    height: 100%;
+    max-height: 100%;
+    overflow: scroll;
+    font-size: 1vw;
+}
+table#equipos tr th{
+    height: 10%;
+}
+table#quipos tbody{
+    height: 100%;
+}
+.rojo{
+    color: red;
+    border: 2px solid red;
+    border-right: 1px solid red;
+}
+form span{
+    cursor: pointer;
+    text-decoration: underline;
+    color: #00ff3c;
+    border: none;
+    
 }

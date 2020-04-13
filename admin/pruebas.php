@@ -1,31 +1,11 @@
 <?php
-#exec($cmd . " > /dev/null &");
+include 'includes/funciones.php';
+include 'includes/config/db.php';
+
 /*
-    $pc = "."; 
-    $obj = new COM ("winmgmts:\\\\".$pc."\\root\\cimv2");
-
-    $disks =  $obj->ExecQuery("Select * from Win32_LogicalDisk");
-    foreach ($disks as $d)
-    {
-        $str=sprintf("%s (%s) %s bytes, %4.1f%% free<br>", $d->Name,$d->VolumeName,number_format($d->Size,0,'.',','), $d->FreeSpace/$d->Size*100.0);
-
-        echo $str;
-    }
-
-$a = snmp2_walk("192.168.43.167", "prueba", "");
-foreach ($a as $val) {
-    echo "$val<br>";
-}
-echo $a[4];
-*/
-/*
-for($i=1;$i<11;$i++){
-    $result = exec("ping -n 1 192.168.4.$i");
-    if (strlen($result) > 18){
-        echo "El host 192.168.4.$i is up";
-    }
-
-}
+ob_flush();
+$result = exec("nmap -sP 192.168.43.0/24");
+var_dump($result);
 */
 echo "<h1>SNMP</h1>";
 #en el punto de mira(discos) 1.3.6.1.2.1.25
@@ -51,13 +31,16 @@ echo "<h1>SNMP</h1>";
 #1.3.6.1.2.1.25.3.3.1.2 Uso cpu
 #.3.6.1.2.1.4.20.1.1.192.168.4.197 interfaz
 #WINDOWS DISCO C C:\=[round(((((oid("1.3.6.1.2.1.25.2.3.1.5.1")-oid("1.3.6.1.2.1.25.2.3.1.6.1"))*oid("1.3.6.1.2.1.25.2.3.1.4.1"))/1024)/1024)/1024)]/[round(((oid("1.3.6.1.2.1.25.2.3.1.5.1")*oid("1.3.6.1.2.1.25.2.3.1.4.1")/1024)/1024)/1024)] GB
-/*$a = snmp2_real_walk("192.168.43.167", "prueba", "1.3.6.1.4.1.2021.1.5");*/
 /*
-$a = snmp2_real_walk("192.168.43.167", "prueba", "1.3.6.1.2.1.25");
+$a = snmp2_get("192.168.43.197", "prueba", "1.3.6.1.2.1.1.1.0");
+var_dump($a);
+
+$a = snmp2_real_walk("192.168.4.197", "privateodecvlc", "1.3.6.1.2.1.25");
 foreach ($a as $val) {
     echo "$val<br>";
 }
-
+*/
+/*
 function ping($host,$port=80,$timeout=6)
 {
         $fsock = fsockopen($host, $port, $errno, $errstr, $timeout);
@@ -91,8 +74,22 @@ if ($ldapconn) {
 
 }
 */
+/*
 $hola = openssl_encrypt('hola k ase', 'aes128', 'abastos',456);
 $hola2 = openssl_decrypt($hola, 'aes128', 'abastos',456);
 print_r($hola);
 print_r($hola2);
+
+$prefix = 24;
+$ip_count = 1 << (32 - $prefix);
+print_r($ip_count);
+echo '<br>';
+$start = ip2long('192.168.4.0');
+print_r($start);
+echo '<br>';
+for ($i = 0; $i < $ip_count; $i++) {
+    $ip = long2ip($start + $i);
+    echo $ip;
+}
+*/
 ?>

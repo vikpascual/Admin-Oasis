@@ -1,4 +1,6 @@
 <?php
+ob_implicit_flush(true);
+ob_end_flush();
 include 'includes/cabecera.php';
 include 'includes/lateral.html';
 ?>
@@ -10,7 +12,10 @@ if(isset($_POST['servicio']) && $_POST['servicio'] == 'virtualbox'){
     include 'includes/ad.php';
 }elseif(isset($_POST['servicio']) && $_POST['servicio'] == 'snmp'){
     include 'includes/snmp.php';
+}elseif(isset($_POST['servicio']) && $_POST['servicio'] == 'equipos'){
+    include 'includes/equipos.php';
 }
+
 ?>
 </main>
 </body>
