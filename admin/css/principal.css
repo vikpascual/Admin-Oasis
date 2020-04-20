@@ -8,12 +8,16 @@ body{
     background-color: #070707;
     color: #00ff3c;
     font-family: 'Sen';
+    font-size: 1vw;
 }
 header{
     display: block;
     width: 100%;
     height: 10%;
     border-bottom: 2px solid #00ff3c;
+}
+footer{
+    margin-top: 5%;
 }
 h1{
     font-size: 2vw;
@@ -197,4 +201,77 @@ form span{
     color: #00ff3c;
     border: none;
     
+}
+#detalles{
+    margin-top: 1%;
+}
+div#lista{
+    width: 99.85%;
+    height: 4%;
+    border-left: 1px solid;
+    border-right: 1px solid;
+    border-bottom: 1px solid;
+    margin-top: -3%;
+}
+ul{
+    width: 100%;
+}
+li{
+    margin-top: 0.5%;
+    list-style-type: none;
+    float: left;
+    margin-left: 1%;
+    cursor: pointer;
+}
+li.activado{
+    text-decoration: underline;
+}
+.no_bordes{
+    float: left;
+}
+.no_bordes th, .no_bordes td{
+    border: 0px;
+}
+#info_general{
+    border: 1px solid;
+    height: 150%;
+    margin-bottom: 20%;
+}
+#discos{
+    width: 100%;
+}
+.peligro{
+    color: red;
+}
+.naranja{
+    color: orange;
+}
+progress.peligro{
+    background-color:red;
+    color:red;
+    }
+progress.peligro[value] {color:red} /* IE10 */
+progress.peligro::-webkit-progress-bar-value {background-color:red}
+progress.peligro::-webkit-progress-value {background-color:red}
+progress.peligro::-moz-progress-bar {background-color:red}
+progress.naranja{
+    background-color:orange;
+    color:orange;
+    }
+progress.naranja[value] {color:orange} /* IE10 */
+progress.naranja::-webkit-progress-bar-value {background-color:orange}
+progress.naranja::-webkit-progress-value {background-color:orange}
+progress.naranja::-moz-progress-bar {background-color:orange}
+
+#Notas{
+    display: none; 
+    border:1px solid; 
+    padding:1%;
+    height: 100%;
+}
+#Servicios{
+    display: none; 
+    border:1px solid; 
+    padding:1%;
+    height: 100%;
 }
