@@ -2,7 +2,7 @@
 include 'config/db.php';
 include 'funciones.php';
 //var_dump($_POST);
-ini_set('max_execution_time', 0); 
+ini_set('max_execution_time', 0); //LAS CONSULTAS SNMP Y WMI GASTAN MUCHO TIEMPO DE EJECUCION
 if(isset($_POST['red'])){
     $red = limpia($_POST['red']);
     if(substr_count($red, '/') == 1){
@@ -13,11 +13,11 @@ if(isset($_POST['red'])){
             $ip_contador = 1 << (32 - $subred);
             $ip_numero = ip2long($ip);
             echo "NO CIERRE NI CAMBIE ESTA VENTANA DURANTE EL ESCANEO<br>";
-            echo '<progress id="escaneo" value="0" max="'.($ip_contador-2).'" style="width:100%;"></progress><br>';
+            echo '<progress id="escaneo" value="0" max="'.($ip_contador-2).'" style="width:100%;"></progress><br>'; //BARRA DE PROGRESO PARA HACER MAS AMENO GRACIAS A DESHABILITAR EL BUFFER
             for ($i = 1; $i < $ip_contador - 1; $i++) {
                 ob_flush();
                 $ip = long2ip($ip_numero + $i);
-                $resultado = exec("ping -n 1 $ip");
+                $resultado = exec("ping -n 1 -w 2000 $ip");
                 echo "<script>document.getElementById('escaneo').value += 1;</script>";
                 if (strlen($resultado) > 22){
                     echo "El host $ip ha sido encontrado<br>";
@@ -30,7 +30,7 @@ if(isset($_POST['red'])){
         }
     }elseif(substr_count($red, '/') == 0){
         if (filter_var($red, FILTER_VALIDATE_IP)){
-            $resultado = exec("ping -n 1 $red");
+            $resultado = exec("ping -n 1 -w 2000$red");
             if (strlen($resultado) > 22){
                 consulta("INSERT INTO equipos(id,ip) VALUES('','$red')");
                 echo "<script>alert('Equipo registrado')</script>";
@@ -46,125 +46,17 @@ if(isset($_POST['red'])){
 }
 if(isset($_POST['actualizar_equipo'])){
     $ip = limpia($_POST['actualizar_equipo']);
-    if(filter_var($ip, FILTER_VALIDATE_IP)){
-        $equipo_propiedades    = consulta( "SELECT * FROM equipos WHERE ip='$ip'");
-        $id_equipo             = $equipo_propiedades[0][0];
-        $id_comunidad          = consulta("SELECT id_comunidad FROM equipos, comunidades_equipos WHERE ".$id_equipo." = id_equipo");
-        $id_wmi                = consulta("SELECT id_wmi FROM equipos, wmi_equipos WHERE ".$id_equipo." = id_equipo");
-        if(empty($id_comunidad)){
-            $lista_comunidades = consulta("SELECT * FROM comunidades");
-            foreach($lista_comunidades as $value){
-                if($value['version'] == 'SNMPv1'){
-                    $descripcion = snmpget($ip,$value['usuario'],'1.3.6.1.2.1.1.1.0');
-                    if(consultar_os($descripcion,$id_equipo,$value['id'])){
-                        break;
-                    }
-                }elseif($value['version'] == 'SNMPv2c'){
-                    $descripcion = snmp2_get($ip,$value['usuario'],'1.3.6.1.2.1.1.1.0');         
-                    if(consultar_os($descripcion,$id_equipo,$value['id'])){
-                        break;
-                    }
-                }else{
-                    if($value['nivel_seguridad'] == 'authPriv'){
-                        $descripcion = snmp3_get($ip, $value['usuario'], 'authPriv', $value['protocolo_autenticacion'], openssl_decrypt($value['pass_autenticacion'], 'aes128', $pass_cifrado), $value['protocolo_privacidad'],openssl_decrypt($value['pass_privacidad'], 'aes128', $pass_cifrado), '1.3.6.1.2.1.1.1.0');
-                        if(consultar_os($descripcion,$id_equipo,$value['id'])){
-                            break;
-                        }
-                    }elseif($value['nivel_seguridad'] == 'authNoPriv'){
-                        $descripcion = snmp3_get($ip, $value['usuario'], 'authNoPriv', $value['protocolo_autenticacion'], openssl_decrypt($value['pass_autenticacion'], 'aes128', $pass_cifrado), '1.3.6.1.2.1.1.1.0');
-                        if(consultar_os($descripcion,$id_equipo,$value['id'])){
-                            break;
-                        }
-                    }else{
-                        $descripcion = snmp3_get($ip, $value['usuario'], 'noAuthNoPriv', '1.3.6.1.2.1.1.1.0');
-                        if(consultar_os($descripcion,$id_equipo,$value['id'])){
-                            break;
-                        }
-                    }
-
-                }
-            }
-        }
-        if(empty($id_wmi) && $equipo_propiedades[0]['os'] == 'Windows'){
-            $lista_wmi = consulta("SELECT * FROM wmi");
-            foreach($lista_wmi as $value){
-                try{
-                    $WbemLocator = new COM ("WbemScripting.SWbemLocator");
-                    if($value[3] == ''){
-                        $WbemServices = $WbemLocator->ConnectServer($ip, 'root\\cimv2', $value[1], openssl_decrypt($value[2], 'aes128', $pass_cifrado));
-                        consulta("INSERT INTO wmi_equipos VALUES ($id_equipo,".$value[0].")");
-                    }else{
-                        $WbemServices = $WbemLocator->ConnectServer($ip, 'root\\cimv2', $value[1].'@'.$value[3], openssl_decrypt($value[2], 'aes128', $pass_cifrado));
-                        consulta("INSERT INTO wmi_equipos VALUES ($id_equipo,".$value[0].")");
-                    }
-                }catch (Exception $e){
-                }
-            }         
-        }
-        if(!empty($id_comunidad)){
-            $comunidad_propiedades = consulta("SELECT * FROM comunidades WHERE id = ".$id_comunidad[0][0]."");
-            if($comunidad_propiedades[0]['version'] == 'SNMPv1'){
-                $nombre = snmpget($ip,$comunidad_propiedades[0]['usuario'],'1.3.6.1.2.1.1.5.0');
-                $descripcion = snmpget($ip,$comunidad_propiedades[0]['usuario'],'1.3.6.1.2.1.1.1.0');
-                $tiempo_encendido = snmpget($ip,$comunidad_propiedades[0]['usuario'],'1.3.6.1.2.1.25.1.1.0');
-                $contacto = snmpget($ip,$comunidad_propiedades[0]['usuario'],'1.3.6.1.2.1.1.4.0');
-                $localizacion = snmpget($ip,$comunidad_propiedades[0]['usuario'],'1.3.6.1.2.1.1.6.0');
-                $indices_discos = snmpget($ip,$comunidad_propiedades[0]['usuario'],'1.3.6.1.2.1.25.2.3.1.1');
-                
-                
-                    
-            }elseif($comunidad_propiedades[0]['version'] == 'SNMPv2c'){
-                $nombre = substr(snmp2_get($ip,$comunidad_propiedades[0]['usuario'],'1.3.6.1.2.1.1.5.0'),9,-1);  
-                $descripcion = substr(snmp2_get($ip,$comunidad_propiedades[0]['usuario'],'1.3.6.1.2.1.1.1.0'),9,-1);       
-                $tiempo_encendido = substr(snmp2_get($ip,$comunidad_propiedades[0]['usuario'],'1.3.6.1.2.1.25.1.1.0'),19);
-                $contacto = substr(snmp2_get($ip,$comunidad_propiedades[0]['usuario'],'1.3.6.1.2.1.1.4.0'),9,-1);
-                $localizacion = substr(snmp2_get($ip,$comunidad_propiedades[0]['usuario'],'1.3.6.1.2.1.1.6.0'),9,-1);
-                $ram = explode(':',snmp2_get($ip,$comunidad_propiedades[0]['usuario'],'1.3.6.1.4.1.2021.4.5.0')); 
-                $ram = round($ram[1] / 1024 / 1024);
-                $mac = array_values(array_unique(explode(' ',exec('arp -a | findstr '.$ip.''))));
-                $mac = Strtoupper(str_replace('-',':',$mac[2]));
-                consulta("UPDATE equipos SET nombre = '$nombre', descripcion = '$descripcion', tiempo_encendido = '$tiempo_encendido',
-                contacto = '$contacto', localizacion = '$localizacion', ram = $ram, mac = '$mac', actualizado = CURRENT_TIMESTAMP() WHERE id = $id_equipo");
-                
-                $descripciones_discos = snmp2_walk($ip,$comunidad_propiedades[0]['usuario'],'1.3.6.1.2.1.25.2.3.1.3');
-                $espacio_discos = snmp2_walk($ip,$comunidad_propiedades[0]['usuario'],'1.3.6.1.2.1.25.2.3.1.5');
-                $espacio_usado = snmp2_walk($ip,$comunidad_propiedades[0]['usuario'],'1.3.6.1.2.1.25.2.3.1.6');
-                $allocation_units = snmp2_walk($ip,$comunidad_propiedades[0]['usuario'],'1.3.6.1.2.1.25.2.3.1.4');
-                for($i = 0; $i < count($allocation_units); $i++){
-                    $descripcion_disco = substr($descripciones_discos[$i],9,-1);
-                    $unidades = explode(':', $allocation_units[$i]);
-                    $espacio_disco = explode(':',$espacio_discos[$i]);
-                    $espacio_disco = round(((int)$espacio_disco[1] * (int)$unidades[1]) / 1024 / 1024 / 1024,1);
-                    var_dump($espacio_disco);
-                }
-                /*Linux
-                $lista_linux = snmp2_walk($ip,$comunidad_propiedades[0]['usuario'],'1.3.6.1.4.1.8072.1.3.2.3.1.1');
-                $cpu = substr($lista_linux[0],22,-1);
-                $bios_version = substr($lista_linux[1],9,-1);
-                $num_serie = substr($lista_linux[2],9,-1);
-                $modelo = substr($lista_linux[3],9,-1);
-                $os_version = substr($lista_linux[4],23,-3);
-                $fabricante = substr($lista_linux[5],9,-1);
-                $arquitectura = substr($lista_linux[6],9,-1);
-                $ultimo_usuario = explode(' ',$lista_linux[7]);
-                $ultimo_usuario = substr($ultimo_usuario[1],1);
-                consulta("UPDATE equipos SET fabricante = '$fabricante',nmodelo = '$modelo', numero_de_serie = '$num_serie',
-                version = '$os_version', procesador = '$cpu', ultimo_usuario = '$ultimo_usuario', bios = '$bios_version',
-                arquitectura = '$arquitectura' WHERE id = $id_equipo");
-                //consulta("INSERT INTO equipos VALUES('',$nombre,$descripcion)")
-                /*LINUX */
-
-                /*WINDOWS */
-
-                /*WINDOWS */
-            }else{
-            }
-
-        }
-        
-    }else{
-        echo "<script>alert('No hagas cosas raras')</script>";
+    actualizar_equipo($ip);
+}elseif(isset($_POST['actualizar_equipos']) && $_POST['actualizar_equipos'] == 'todos') {
+    $lista_ips = consulta('SELECT ip FROM equipos ORDER BY INET_ATON(ip)');
+    echo "ESTO PUEDE TARDAR NO CIERRE LA VENTANA<br>";
+    echo '<progress id="escaneo" value="0" max="'.count($lista_ips).'" style="width:100%;"></progress><br>'; //BARRA DE PROGRESO PARA HACER MAS AMENO GRACIAS A DESHABILITAR EL BUFFER
+    foreach($lista_ips as $value){
+        echo $value['ip'].'...<br>';
+        actualizar_equipo($value['ip']);
+        echo "<script>document.getElementById('escaneo').value += 1;</script>";
     }
+    echo "<script>enviar('equipos')</script>";
 }
 ?>
 <?php
@@ -182,12 +74,11 @@ if(isset($_POST['actualizar_equipo'])){
         <th>MAC Address</th>
         <th>Modelo</th>
         <th>Última actualizacón</th>
-        <th><form name="actualizar_equipos" action="index.php" method="POST" onclick="enviar('actualizar_equipos')"><span>Actualizar todos</span><input type="hidden" name="actualizar_equipos" value="todos"><input type="hidden" name="servicio" value="equipos"></form></t>
+        <th><form name="actualizar_todos" action="index.php" method="POST" onclick="enviar('actualizar_todos')"><span>Actualizar todos</span><input type="hidden" name="actualizar_equipos" value="todos"><input type="hidden" name="servicio" value="equipos"></form></t>
     </tr>
     <?php 
-        $contador = 1;
         foreach($lista_equipos as $value){
-            echo "<tr id=".ip2long($value[1]).">";
+            echo "<tr id=".ip2long($value[1])." onclick=\"enviar('actualizar_equipo".ip2long($value[1])."') \" style='cursor:pointer;'>";
             echo "<td>$value[0]</td>";
             echo "<td>$value[1]</td>";
             echo "<td>$value[2]</td>";
@@ -195,22 +86,295 @@ if(isset($_POST['actualizar_equipo'])){
             echo "<td>$value[4]</td>";
             echo "<td>$value[5]</td>";
             echo "<td>$value[6]</td>";
-            echo '<td><form name="actualizar_equipo'.$contador.'" action="index.php" method="POST" onclick="enviar(\'actualizar_equipo'.$contador.'\')"><span>Actualizar</span><input type="hidden" name="actualizar_equipo" value="'.$value[1].'"><input type="hidden" name="servicio" value="equipos"></form></td>';
+            echo '<td><form name="actualizar_equipo'.ip2long($value[1]).'" action="index.php" method="POST" onclick="enviar(\'actualizar_equipo'.ip2long($value[1]).'\')"><span>Actualizar</span><input type="hidden" name="actualizar_equipo" value="'.$value[1].'"><input type="hidden" name="servicio" value="equipos"></form></td>';
             echo "</tr>";
-            $contador++;
         }
     ?>
 </table>
 </div>
 <?php 
-    foreach($lista_equipos as $value){
-        $resultado = exec("ping -n 1 $value[1]");
-        if (strlen($resultado) < 22){
-            echo "<script>
-            for (i = 0; i < 8; i++) {
-                document.getElementById(".ip2long($value[1]).").childNodes[i].className = 'rojo';
-            };
-            </script>";
+if(isset($_POST['actualizar_equipo'])){
+    if(isset($_POST['notas'])){
+        $notas = limpia($_POST['notas']);
+        consulta("UPDATE equipos set notas='$notas' WHERE ip = '$ip'");
+    }
+    if(isset($_POST['id']) && filter_var($_POST['id'], FILTER_VALIDATE_INT) ){
+        $id_servicio = limpia($_POST['id']);
+        consulta("DELETE FROM servicios WHERE id = $id_servicio");
+    }
+    if(isset($_POST['nombre_servicio']) && !empty($_POST['nombre_servicio']) && filter_var($_POST['puerto_servicio'], FILTER_VALIDATE_INT) && $_POST['puerto_servicio'] > 0 && $_POST['puerto_servicio'] < 65535 ){
+        $nombre_servicio = limpia($_POST['nombre_servicio']);
+        $puerto          = limpia($_POST['puerto_servicio']);
+        consulta("INSERT INTO servicios VALUES('','$ip','$nombre_servicio','$puerto')");
+    }
+    $lista_equipo    = consulta("SELECT * FROM equipos WHERE ip = '$ip'");
+    $lista_equipo    = $lista_equipo[0];
+    $lista_discos    = consulta("SELECT * FROM discos WHERE id_equipo = ".$lista_equipo['id']."");
+    $lista_servicios = consulta("SELECT * FROM servicios WHERE ip = '$ip'");
+?>
+<div id="detalles">
+    <h1>Detalles Del Dispositivo</h1>
+    <table style="width:100%">
+        <th>
+            <h3><?=$lista_equipo['nombre']?></h3>
+            <span><?=$lista_equipo['fabricante']?> / <?=$lista_equipo['modelo']?></span><br>
+            <span><img src="img/no_user_silhouette.png"> <?=$lista_equipo['ultimo_usuario']?></span>
+        </th>
+
+        <th>
+            <span><img src="img/processor_gray.png"> <?=$lista_equipo['procesador']?></span><br>
+            <span><img src="img/bullet_orange.png"> <?=$lista_equipo['os']?> <?=$lista_equipo['version']?></span><br>
+            <span><img src="img/ram.png"> <?=$lista_equipo['ram']?> GB</span>
+        </th>
+
+        <th>
+            <span><img src="img/online_lan.png"> <?=$lista_equipo['ip']?></span><span style="font-size:0.65vw;" id="estado"> (Online)</span><br>
+        </th>
+    </table>
+</div>
+<div id="lista">
+    <ul>
+        <li id="Info_General" class="activado">Info General</li>
+        <li id="servicios">Servicios</li>
+        <li id="notas">Notas</li>
+    </ul>
+</div>
+<div id="info_general">
+    <table class="no_bordes">
+        <tr>
+            <td>Fabricante:</td>
+            <td><?=$lista_equipo['fabricante']?></td>
+        <tr>
+        <tr>
+            <td>Descripcion:</td>
+            <td><?=$lista_equipo['descripcion']?></td>
+        <tr>
+        <tr>
+            <td>Tipo de Equipo:</td>
+            <td><?=$lista_equipo['tipo_dispositivo']?></td>
+        <tr>
+        <tr>
+            <td>Modelo:</td>
+            <td><?=$lista_equipo['modelo']?></td>
+        <tr>
+        <tr>
+            <td>Número de serie:</td>
+            <td><?=$lista_equipo['numero_de_serie']?></td>
+        <tr>
+        <tr>
+            <td>MAC:</td>
+            <td><?=$lista_equipo['mac']?></td>
+        <tr>
+        <tr>
+            <td>Localización:</td>
+            <td><?=$lista_equipo['localizacion']?></td>
+        <tr>
+        <tr>
+            <td>Contacto:</td>
+            <td><?=$lista_equipo['contacto']?></td>
+        <tr>
+        
+    </table>
+    <table class="no_bordes">
+        <tr>
+            <td>Procesador:</td>
+            <td><?=$lista_equipo['procesador']?></td>
+        <tr>
+        <tr>
+            <td>Memoria:</td>
+            <td><?=$lista_equipo['ram']?> GB</td>
+        <tr>
+        <tr>
+            <td>OS:</td>
+            <td><?=$lista_equipo['os']?></td>
+        <tr>
+        <tr>
+            <td>Version:</td>
+            <td><?=$lista_equipo['version']?></td>
+        <tr>
+        <tr>
+            <td>Ultimo usuario:</td>
+            <td><?=$lista_equipo['ultimo_usuario']?></td>
+        <tr>
+        <tr>
+            <td>BIOS:</td>
+            <td><?=$lista_equipo['bios']?></td>
+        <tr>
+        <tr>
+            <td>Arquitectura:</td>
+            <td><?=$lista_equipo['arquitectura']?></td>
+        <tr>
+        <tr>
+            <td>Tiempo encendido:</td>
+            <td><?=$lista_equipo['tiempo_encendido']?></td>
+        <tr>
+        <tr>
+            <td>Última actualización:</td>
+            <td><?=$lista_equipo['actualizado']?></td>
+        <tr>
+        <tr>
+            <td>Fecha de registro:</td>
+            <td><?=$lista_equipo['creado']?></td>
+        <tr>
+        <tr>
+            <td><br><br><br><br></td>
+        <tr>
+    </table>
+    <div id="discos">
+        <?php
+            $total_usado     = 0;
+            $capacidad_total = 0;
+            foreach($lista_discos as $value){
+                $total_usado     += $value['espacio_usado'];
+                $capacidad_total += $value['espacio_total'];
+            }
+        ?>
+        <span>Total De Almacenamiento Usado: <?=round(($total_usado * 100) / $capacidad_total,2)?>% (<?=$total_usado?> GB) </span><span style="margin-left:5%">Capacidad Total De Almacenamiento: <?=$capacidad_total?> GB</span>
+        <hr>
+        <table class="no_bordes" style="width:100%">
+            <tr>
+                <th>Nombre Volumen/Disco</th>
+                <th>Almacenamiento Gráfico</th>
+                <th>Espacio Libre</th>
+                <th>Capacidad Total Del Volumen/Disco</th>
+            </tr>
+            <?php
+                foreach($lista_discos as $value){
+                    $espacio_sin_usar = $value['espacio_total'] - $value['espacio_usado'];
+                    $clase      = '';
+                    if(round(($value['espacio_usado'] * 100) / $value['espacio_total']) >= 90){
+                        $clase = 'class="peligro"';
+                    }elseif(round(($value['espacio_usado'] * 100) / $value['espacio_total']) >= 70){
+                        $clase = 'class="naranja"';
+                    }
+                    echo "<tr>";
+                    echo "<td $clase>".$value['descripcion']."</td>";
+                    echo "<td $clase><progress value='".round(($value['espacio_usado'] * 100) / $value['espacio_total'])."' max=100 $clase></progress> ".round(($espacio_sin_usar * 100) / $value['espacio_total'],2)."% Libre</td>";
+                    echo "<td $clase>".$espacio_sin_usar." GB</td>";
+                    echo "<td $clase>".$value['espacio_total']." GB</td>";
+                    echo "</tr>";
+                }
+            ?>
+        </table>
+    </div>
+</div>
+<div id="Servicios">
+        <table class="no_bordes" style="width:100%">
+            <tr>
+                <th>Id</th>
+                <th>Nombre</th>
+                <th>Puerto</th>
+                <th>Estado</th>
+            </tr>
+            <?php
+                foreach($lista_servicios as $value){
+                    echo "<tr>";
+                    ?>
+                    <form method="POST" action="index.php" z>
+                        <input type="hidden" name="servicio" value="equipos">
+                        <input type="hidden" name="actualizar_equipo" value='<?=$ip?>'>
+                        <input type="hidden" name="id" value="<?=$value['id']?>">
+                    <?php
+                     
+                    echo "<td>".$value['id']."</td>";
+                    echo "<td>".$value['nombre']."</td>";
+                    echo "<td>".$value['puerto']."</td>";
+                    $ping = fsockopen($value['ip'], $value['puerto'], $errno, $errstr, 2);
+                     if (!$ping){
+                        echo "<td style='color:red'>Cerrado</td>";
+                     }else{
+                        echo "<td>Abierto</td>";
+                     }
+                    
+                    echo "<td><input type='submit' value='Borrar'></input></td>";
+                    echo "</form></tr>";
+                }
+            ?>
+            <tr>
+            <form method="POST" action="index.php" z>
+                <input type="hidden" name="servicio" value="equipos">
+                <input type="hidden" name="actualizar_equipo" value='<?=$ip?>'>
+                <td>Automático</td>
+                <td><input type="text" name="nombre_servicio"></td>
+                <td><input type="number" min="1" max="65535" name="puerto_servicio"></td>
+                <td>Ninguno</td>
+                <td><input type="submit" value="Añadir Servicio"></input></td>
+            </form>
+            </tr>
+            
+        </table>
+    
+</div>
+<div id="Notas">
+    <h1>Notas</h1>
+    <form method="POST" action="index.php">
+        <input type="hidden" name="servicio" value="equipos">
+        <input type="hidden" name="actualizar_equipo" value='<?=$ip?>'>
+        <textarea style="width:100%;height:300px" name="notas"><?=$lista_equipo['notas']?></textarea>
+        <input type="submit" value="Guardar">
+    </form>
+</div>
+<?php
+}
+?>
+<script src="js/jquery.js"></script>
+<script>
+    $(document).ready(function(){
+        $("#Info_General").on("click",function(){
+            $("#info_general").show();
+            $("#Servicios").hide();
+            $("#Notas").hide();
+            $("#Info_General").addClass('activado');
+            $("#servicios").removeClass('activado');
+            $("#notas").removeClass('activado');
+        });
+        $("#servicios").on("click",function(){
+            $("#info_general").hide();
+            $("#Servicios").show();
+            $("#Notas").hide();
+            $("#Info_General").removeClass('activado');
+            $("#servicios").addClass('activado');
+            $("#notas").removeClass('activado');
+        });
+        $("#notas").on("click",function(){
+            $("#info_general").hide();
+            $("#Servicios").hide();
+            $("#Notas").show();
+            $("#Info_General").removeClass('activado');
+            $("#servicios").removeClass('activado');
+            $("#notas").addClass('activado');
+        });
+    });
+
+</script>
+<footer>
+<?php
+foreach($lista_equipos as $value){
+    $resultado = exec("ping -n 1 -w 2000 $value[1]");
+    if (strlen($resultado) < 22){
+        echo "<script>
+        for (i = 0; i < 8; i++) {
+            document.getElementById(".ip2long($value[1]).").childNodes[i].className = 'rojo';
+        };
+        </script>";
+    }else{
+        $lista_servicios = consulta("SELECT * FROM servicios WHERE ip = '$value[1]'");
+        if(!empty($lista_servicios)){
+            $num_servicios = count($lista_servicios);
+            $contador      = 0;
+            foreach($lista_servicios as $servicio){
+                $ping = fsockopen($value[1], $servicio['puerto'], $errno, $errstr, 2);
+                if (!$ping){
+                    echo "<script>
+                    for (i = 0; i < 8; i++) {
+                        document.getElementById(".ip2long($value[1]).").childNodes[i].className = 'naranja';
+                    };
+                    </script>";
+                break;
+                }
+            }
         }
     }
+}
 ?>
+</footer>
