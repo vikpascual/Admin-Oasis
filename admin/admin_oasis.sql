@@ -1,12 +1,3 @@
--- phpMyAdmin SQL Dump
--- version 4.9.1
--- https://www.phpmyadmin.net/
---
--- Servidor: 127.0.0.1
--- Tiempo de generación: 13-04-2020 a las 20:57:56
--- Versión del servidor: 10.4.8-MariaDB
--- Versión de PHP: 7.3.10
-
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET AUTOCOMMIT = 0;
 START TRANSACTION;
@@ -58,11 +49,11 @@ CREATE TABLE `comunidades_equipos` (
 --
 
 CREATE TABLE `discos` (
-  `id` int(11) NOT NULL,
   `id_equipo` int(11) NOT NULL,
+  `indice_disco` int(3) NOT NULL,
   `descripcion` varchar(100) DEFAULT NULL,
-  `espacio_libre` int(11) DEFAULT NULL,
-  `espacio_total` int(11) DEFAULT NULL
+  `espacio_usado` float DEFAULT NULL,
+  `espacio_total` float DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
@@ -92,7 +83,8 @@ CREATE TABLE `equipos` (
   `arquitectura` varchar(10) DEFAULT NULL,
   `tipo_dispositivo` varchar(30) DEFAULT NULL,
   `localizacion` varchar(50) DEFAULT NULL,
-  `contacto` varchar(255) DEFAULT NULL
+  `contacto` varchar(255) DEFAULT NULL,
+  `notas` mediumtext DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
@@ -103,7 +95,7 @@ CREATE TABLE `equipos` (
 
 CREATE TABLE `servicios` (
   `id` int(11) NOT NULL,
-  `ip` int(11) NOT NULL,
+  `ip` varchar(15) NOT NULL,
   `nombre` varchar(50) NOT NULL,
   `puerto` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -164,8 +156,8 @@ ALTER TABLE `comunidades_equipos`
 -- Indices de la tabla `discos`
 --
 ALTER TABLE `discos`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `id_equipo` (`id_equipo`);
+  ADD PRIMARY KEY (`id_equipo`,`indice_disco`),
+  ADD KEY `id_equipo` (`id_equipo`,`indice_disco`);
 
 --
 -- Indices de la tabla `equipos`
@@ -207,12 +199,6 @@ ALTER TABLE `wmi_equipos`
 -- AUTO_INCREMENT de la tabla `comunidades`
 --
 ALTER TABLE `comunidades`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT de la tabla `discos`
---
-ALTER TABLE `discos`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
