@@ -12,6 +12,8 @@ if (empty($_SERVER['HTTPS']) || $_SERVER['HTTPS'] === "off") {
     header('Location: ' . $location);
     exit;
 }
+include 'includes/config/db.php';
+include 'includes/funciones.php';
 ?>
 <!DOCTYPE html>
 <html lang="es">

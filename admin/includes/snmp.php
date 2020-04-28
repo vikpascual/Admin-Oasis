@@ -1,18 +1,16 @@
 <?php 
-include 'config/db.php';
-include 'funciones.php';
 if(isset($_POST['accion']) && $_POST['accion'] == 'add'){
     if(isset($_POST['version']) && $_POST['version'] == '3'){
         if(isset($_POST['nombre']) && isset($_POST['community_string']) && isset($_POST['seguridad'])){  
             $version         = "SNMPv3";
-            $nombre          = limpia($_POST['nombre']);
-            $comunidad       = limpia($_POST['community_string']);  
+            $nombre          = $_POST['nombre'];
+            $comunidad       = $_POST['community_string'];  
             if($_POST['seguridad'] == '1'){                 
                 $nivel_seguridad = "noAuthNoPriv";
                 consulta( "INSERT INTO comunidades (id,nombre,version,usuario,nivel_seguridad) VALUES('','$nombre','$version','$comunidad','$nivel_seguridad')");
             }elseif($_POST['seguridad'] == '2' && isset($_POST['auth_protocol']) && isset($_POST['auth_pass'])){
                 $nivel_seguridad = "authNoPriv";
-                $auth_pass       = openssl_encrypt(limpia($_POST['auth_pass']), 'aes128', $pass_cifrado);
+                $auth_pass       = openssl_encrypt($_POST['auth_pass'], 'aes128', $pass_cifrado);
                 if($_POST['auth_protocol'] == '1'){
                     $auth_protocol   = "MD5";
                     consulta( "INSERT INTO comunidades (id,nombre,version,usuario,nivel_seguridad,protocolo_autenticacion,pass_autenticacion)
@@ -29,8 +27,8 @@ if(isset($_POST['accion']) && $_POST['accion'] == 'add'){
             }elseif($_POST['seguridad'] == 3 && isset($_POST['auth_protocol']) && isset($_POST['auth_pass'])
              && isset($_POST['priv_protocol']) && isset($_POST['priv_pass'])){
                 $nivel_seguridad = "authPriv";
-                $auth_pass       = openssl_encrypt(limpia($_POST['auth_pass']), 'aes128', $pass_cifrado);
-                $priv_pass       = openssl_encrypt(limpia($_POST['auth_priv']), 'aes128', $pass_cifrado);
+                $auth_pass       = openssl_encrypt($_POST['auth_pass'], 'aes128', $pass_cifrado);
+                $priv_pass       = openssl_encrypt($_POST['auth_priv'], 'aes128', $pass_cifrado);
                 if($_POST['auth_protocol'] == '1'){
                     $auth_protocol   = "MD5";
                 }elseif($_POST['auth_protocol'] == '2'){
@@ -59,8 +57,8 @@ if(isset($_POST['accion']) && $_POST['accion'] == 'add'){
     } elseif(isset($_POST['version']) && $_POST['version'] == '1' || $_POST['version'] == '2' ){
         if(isset($_POST['nombre']) && isset($_POST['community_string'])){
             $version   = ($_POST['version'] == '2') ? "SNMPv2c" : "SNMPv1";
-            $nombre    = limpia($_POST['nombre']);
-            $comunidad = limpia($_POST['community_string']);
+            $nombre    = $_POST['nombre'];
+            $comunidad = $_POST['community_string'];
             consulta( "INSERT INTO comunidades (id,nombre,version,usuario) VALUES('','$nombre','$version','$comunidad')");
         }
     } else{
@@ -68,7 +66,7 @@ if(isset($_POST['accion']) && $_POST['accion'] == 'add'){
     }
 
 }elseif (isset($_POST['accion']) && $_POST['accion'] == 'borrar' && isset($_POST['id'])){
-    $id = limpia($_POST['id']);
+    $id = $_POST['id'];
     consulta("DELETE FROM comunidades WHERE id=$id;");
     consulta("DELETE FROM comunidades_equipos WHERE id_comunidad=$id;");
 }
@@ -86,10 +84,10 @@ if(isset($_POST['accion']) && $_POST['accion'] == 'add'){
         if($lista_comunidades){
             foreach($lista_comunidades as $value){
                 echo "<tr>";
-                echo "<td>$value[0]</td>";
-                echo "<td>$value[1]</td>";
-                echo "<td>$value[2]</td>";
-                echo "<td>$value[3]</td>";
+                echo "<td>".limpia($value[0])."</td>";
+                echo "<td>".limpia($value[1])."</td>";
+                echo "<td>".limpia($value[2])."</td>";
+                echo "<td>".limpia($value[3])."</td>";
                 echo "</tr>";
             }
         }else{
@@ -219,9 +217,9 @@ if(isset($_POST['accion']) && $_POST['accion'] == 'add'){
         if ($_POST['usuario'] == ''){
             echo "<script>alert('Falta el usuario')</script>";
         }else{
-            $usuario = limpia($_POST['usuario']);
-            $dominio = limpia($_POST['dominio']);
-            $pass    = openssl_encrypt(limpia($_POST['pass']), 'aes128', $pass_cifrado);
+            $usuario = $_POST['usuario'];
+            $dominio = $_POST['dominio'];
+            $pass    = openssl_encrypt($_POST['pass'], 'aes128', $pass_cifrado);
             consulta("INSERT INTO wmi VALUES ('','$usuario','$pass','$dominio')");
         }   
     }
@@ -229,16 +227,16 @@ if(isset($_POST['accion']) && $_POST['accion'] == 'add'){
         if ($_POST['id_usuario'] == ''){
             echo "<script>alert('Falta el ID de usuario')</script>";
         }else{
-            $id = limpia($_POST['id_usuario']);
+            $id = $_POST['id_usuario'];
             consulta("DELETE FROM wmi WHERE id = $id");
         }   
     }
     $usuarios = consulta("SELECT id,usuario,dominio FROM wmi");
     foreach($usuarios as $value){
         echo "<tr>";
-        echo "<th>".$value[0]."</th>";
-        echo "<th>".$value[1]."</th>";
-        echo "<th>".$value[2]."</th>";
+        echo "<th>".limpia($value[0])."</th>";
+        echo "<th>".limpia($value[1])."</th>";
+        echo "<th>".limpia($value[2])."</th>";
         echo "</tr>";
     }
     ?>

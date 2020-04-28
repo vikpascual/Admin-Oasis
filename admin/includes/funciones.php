@@ -290,7 +290,7 @@ function actualizar_windows($id_equipo,$id_wmi,$ip){
     $os_info        = $WbemServices->ExecQuery("Select * from Win32_OperatingSystem");
     $mac_lista      = $WbemServices->ExecQuery("Select * from Win32_NetworkAdapter");
     //$ip_buena = $WbemServices->ExecQuery("Select * from Win32_NetworkAdapterConfiguration"); // SI EL ORDENADOR NO ESTA EN LA MISMA SUBRED ARP -A NO TIENE EFECTO POR ESO LO PONGO.EN SNMP ES MUY COMPLICADO
-    //$pillar_usuario = $WbemServices->ExecQuery("Select * from Win32_NetworkLoginProfile");// REVISAR
+    $pillar_usuario = $WbemServices->ExecQuery("Select * from Win32_NetworkLoginProfile");// REVISAR
     foreach($cpu_info as $instancia){
         $cpu = $instancia->Name;
     }
@@ -327,10 +327,10 @@ function actualizar_windows($id_equipo,$id_wmi,$ip){
         }
     }
     */
-    /* REVISAR
+    /*
     foreach($pillar_usuario as $instancia){
         $hola = $instancia->Name;
-        $fecha = $instancia->NumberOfLogons;
+        $fecha = $instancia->LastLogon;
         var_dump($fecha);
         var_dump($hola);
     }

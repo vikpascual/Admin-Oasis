@@ -1,6 +1,4 @@
 <?php
-include 'config/db.php';
-include 'funciones.php';
 //var_dump($_POST);
 ini_set('max_execution_time', 0); //LAS CONSULTAS SNMP Y WMI GASTAN MUCHO TIEMPO DE EJECUCION
 if(isset($_POST['red'])){
@@ -45,7 +43,7 @@ if(isset($_POST['red'])){
     }
 }
 if(isset($_POST['actualizar_equipo'])){
-    $ip = limpia($_POST['actualizar_equipo']);
+    $ip = $_POST['actualizar_equipo'];
     actualizar_equipo($ip);
 }elseif(isset($_POST['actualizar_equipos']) && $_POST['actualizar_equipos'] == 'todos') {
     $lista_ips = consulta('SELECT ip FROM equipos ORDER BY INET_ATON(ip)');
@@ -79,13 +77,13 @@ if(isset($_POST['actualizar_equipo'])){
     <?php 
         foreach($lista_equipos as $value){
             echo "<tr id=".ip2long($value[1])." onclick=\"enviar('actualizar_equipo".ip2long($value[1])."') \" style='cursor:pointer;'>";
-            echo "<td>$value[0]</td>";
-            echo "<td>$value[1]</td>";
-            echo "<td>$value[2]</td>";
-            echo "<td>$value[3] $value[7]</td>";
-            echo "<td>$value[4]</td>";
-            echo "<td>$value[5]</td>";
-            echo "<td>$value[6]</td>";
+            echo '<td>'.limpia($value[0]).'</td>';
+            echo '<td>'.limpia($value[1]).'</td>';
+            echo '<td>'.limpia($value[2]).'</td>';
+            echo "<td>".limpia($value[3]).' '.limpia($value[7])."</td>";
+            echo '<td>'.limpia($value[4]).'</td>';
+            echo '<td>'.limpia($value[5]).'</td>';
+            echo '<td>'.limpia($value[6]).'</td>';
             echo '<td><form name="actualizar_equipo'.ip2long($value[1]).'" action="index.php" method="POST" onclick="enviar(\'actualizar_equipo'.ip2long($value[1]).'\')"><span>Actualizar</span><input type="hidden" name="actualizar_equipo" value="'.$value[1].'"><input type="hidden" name="servicio" value="equipos"></form></td>';
             echo "</tr>";
         }
@@ -95,16 +93,16 @@ if(isset($_POST['actualizar_equipo'])){
 <?php 
 if(isset($_POST['actualizar_equipo'])){
     if(isset($_POST['notas'])){
-        $notas = limpia($_POST['notas']);
+        $notas = $_POST['notas'];
         consulta("UPDATE equipos set notas='$notas' WHERE ip = '$ip'");
     }
     if(isset($_POST['id']) && filter_var($_POST['id'], FILTER_VALIDATE_INT) ){
-        $id_servicio = limpia($_POST['id']);
+        $id_servicio = $_POST['id'];
         consulta("DELETE FROM servicios WHERE id = $id_servicio");
     }
     if(isset($_POST['nombre_servicio']) && !empty($_POST['nombre_servicio']) && filter_var($_POST['puerto_servicio'], FILTER_VALIDATE_INT) && $_POST['puerto_servicio'] > 0 && $_POST['puerto_servicio'] < 65535 ){
-        $nombre_servicio = limpia($_POST['nombre_servicio']);
-        $puerto          = limpia($_POST['puerto_servicio']);
+        $nombre_servicio = $_POST['nombre_servicio'];
+        $puerto          = $_POST['puerto_servicio'];
         consulta("INSERT INTO servicios VALUES('','$ip','$nombre_servicio','$puerto')");
     }
     $lista_equipo    = consulta("SELECT * FROM equipos WHERE ip = '$ip'");
@@ -128,7 +126,7 @@ if(isset($_POST['actualizar_equipo'])){
         </th>
 
         <th>
-            <span><img src="img/online_lan.png"> <?=$lista_equipo['ip']?></span><span style="font-size:0.65vw;" id="estado"> (Online)</span><br>
+            <span><img src="img/online_lan.png" id="estado_logo"> <?=$lista_equipo['ip']?></span><span style="font-size:0.65vw;" id="estado"> (Online)</span><br>
         </th>
     </table>
 </div>
@@ -248,7 +246,7 @@ if(isset($_POST['actualizar_equipo'])){
                         $clase = 'class="naranja"';
                     }
                     echo "<tr>";
-                    echo "<td $clase>".$value['descripcion']."</td>";
+                    echo "<td $clase>".limpia($value['descripcion'])."</td>";
                     echo "<td $clase><progress value='".round(($value['espacio_usado'] * 100) / $value['espacio_total'])."' max=100 $clase></progress> ".round(($espacio_sin_usar * 100) / $value['espacio_total'],2)."% Libre</td>";
                     echo "<td $clase>".$espacio_sin_usar." GB</td>";
                     echo "<td $clase>".$value['espacio_total']." GB</td>";
@@ -268,7 +266,7 @@ if(isset($_POST['actualizar_equipo'])){
             </tr>
             <?php
                 foreach($lista_servicios as $value){
-                    echo "<tr>";
+                    echo '<tr>';
                     ?>
                     <form method="POST" action="index.php" z>
                         <input type="hidden" name="servicio" value="equipos">
@@ -276,18 +274,18 @@ if(isset($_POST['actualizar_equipo'])){
                         <input type="hidden" name="id" value="<?=$value['id']?>">
                     <?php
                      
-                    echo "<td>".$value['id']."</td>";
-                    echo "<td>".$value['nombre']."</td>";
-                    echo "<td>".$value['puerto']."</td>";
+                    echo '<td>'.limpia($value['id']).'</td>';
+                    echo '<td>'.limpia($value['nombre']).'</td>';
+                    echo '<td>'.limpia($value['puerto']).'</td>';
                     $ping = fsockopen($value['ip'], $value['puerto'], $errno, $errstr, 2);
                      if (!$ping){
-                        echo "<td style='color:red'>Cerrado</td>";
+                        echo '<td style="color:red">Cerrado</td>';
                      }else{
-                        echo "<td>Abierto</td>";
+                        echo '<td>Abierto</td>';
                      }
                     
-                    echo "<td><input type='submit' value='Borrar'></input></td>";
-                    echo "</form></tr>";
+                    echo '<td><input type="submit" value="Borrar"></input></td>';
+                    echo '</form></tr>';
                 }
             ?>
             <tr>
@@ -357,6 +355,11 @@ foreach($lista_equipos as $value){
             document.getElementById(".ip2long($value[1]).").childNodes[i].className = 'rojo';
         };
         </script>";
+        if($value[1] == $ip){
+            echo "<script>document.getElementById('estado').innerHTML = ' (offline)';</script>";
+            echo "<script>document.getElementById('estado').style = 'color:red;';</script>";
+            echo "<script>document.getElementById('estado_logo').src = 'img/offline_lan.png';</script>";
+        }
     }else{
         $lista_servicios = consulta("SELECT * FROM servicios WHERE ip = '$value[1]'");
         if(!empty($lista_servicios)){
