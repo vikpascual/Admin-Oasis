@@ -1,8 +1,7 @@
 <?php
 include 'includes/config/db.php';
-include 'includes/funciones.php';
-$usuario      = limpia($_POST['usuario']);
-$pass         = sha1(sha1(sha1($_POST['pass'])));
+$usuario      = $_POST['usuario'];
+$pass         = sha1(md5(sha1($_POST['pass'])));
 $consulta     = "SELECT count(*) FROM usuario WHERE usuario = '$usuario' AND password = '$pass'";
 $resultado    = $conexion->prepare($consulta);
 $resultado->execute();
@@ -12,6 +11,6 @@ if($numero_de_columnas == 1){
     $_SESSION['logueado'] = TRUE;
     header('Location: index.php');
 } else {
-    header('Location: entrar.html');
+    header('Location: entrar.php');
 }
 ?>
