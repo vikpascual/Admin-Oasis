@@ -4,8 +4,8 @@ if(isset($_POST['destruir']) && $_POST['destruir'] == 'destruir'){
 }
 
 if(isset($_SESSION['consola']['sesion_iniciada']) && $_SESSION['consola']['sesion_iniciada']){
-    $conexion_shh = ssh2_connect($_SESSION['consola']['ip'], 22);
-    if(ssh2_auth_password($conexion_shh, $_SESSION['consola']['usuario'], $_SESSION['consola']['pass'])){
+    $conexion_ssh = ssh2_connect($_SESSION['consola']['ip'], $_SESSION['consola']['puerto']);
+    if(ssh2_auth_password($conexion_ssh, $_SESSION['consola']['usuario'], $_SESSION['consola']['pass'])){
         //usuario
         ?>
         <h1>Consola</h1> 
@@ -19,7 +19,7 @@ if(isset($_SESSION['consola']['sesion_iniciada']) && $_SESSION['consola']['sesio
         }
         if(isset($_SESSION['consola']['directorio_actual'])){
             $orden = 'cd '.$_SESSION['consola']['directorio_actual'];
-            $stream = ssh2_exec($conexion_shh, $orden);
+            $stream = ssh2_exec($conexion_ssh, $orden);
             usleep(500000);
         } else{
             $_SESSION['consola']['directorio_actual'] = '~';
@@ -30,7 +30,7 @@ if(isset($_SESSION['consola']['sesion_iniciada']) && $_SESSION['consola']['sesio
             array_push($_SESSION['consola']['salida'], '<span style="color:#00ff3c">'.$_SESSION['consola']['usuario'].'</span><span style="color:#1155cc">@</span><span style="color:#ffff00">'.$_SESSION['consola']['hostname'].'</span>:<span style="color:#1155cc">'.$_SESSION['consola']['directorio_actual'].'$ </span>'.$orden);
             if(substr($orden, 0, 3) == 'cd '){
                 $orden_directorio = $orden.'; pwd';
-                $stream = ssh2_exec($conexion_shh, $orden_directorio);
+                $stream = ssh2_exec($conexion_ssh, $orden_directorio);
                 usleep(250000);
                 $directorio = stream_get_contents($stream);
                 $_SESSION['consola']['directorio_actual'] = preg_split('/\r\n|\r|\n/', $directorio)[0];
@@ -39,7 +39,7 @@ if(isset($_SESSION['consola']['sesion_iniciada']) && $_SESSION['consola']['sesio
             }else{
                 $orden = 'cd '.$_SESSION['consola']['directorio_actual'].'; '.$orden;
             }
-            $stream = ssh2_exec($conexion_shh, $orden);
+            $stream = ssh2_exec($conexion_ssh, $orden);
             usleep(500000);
             $resultado = stream_get_contents($stream);
             $resultado = preg_split('/\r\n|\r|\n/', $resultado);
@@ -61,16 +61,17 @@ if(isset($_SESSION['consola']['sesion_iniciada']) && $_SESSION['consola']['sesio
 
 }else{
     if(isset($_POST['ip']) && filter_var($_POST['ip'], FILTER_VALIDATE_IP) && isset($_POST['usuario']) && !empty($_POST['pass']) 
-    && !empty($_POST['ip']) && !empty($_POST['usuario'])){
+    && !empty($_POST['ip']) && !empty($_POST['usuario']) && isset($_POST['puerto']) && filter_var($_POST['puerto'], FILTER_VALIDATE_INT)){
             
         $_SESSION['consola']['ip']      = $_POST['ip'];
         $_SESSION['consola']['usuario'] = $_POST['usuario'];
         $_SESSION['consola']['pass']    = $_POST['pass'];
+        $_SESSION['consola']['puerto']  = $_POST['puerto'];
     
-        $conexion_shh = ssh2_connect($_SESSION['consola']['ip'], 22);
-        if(ssh2_auth_password($conexion_shh, $_SESSION['consola']['usuario'], $_SESSION['consola']['pass'])){
+        $conexion_ssh = ssh2_connect($_SESSION['consola']['ip'], $_SESSION['consola']['puerto']);
+        if(ssh2_auth_password($conexion_ssh, $_SESSION['consola']['usuario'], $_SESSION['consola']['pass'])){
             $_SESSION['consola']['sesion_iniciada'] = true;
-            $shell = ssh2_shell($conexion_shh);
+            $shell = ssh2_shell($conexion_ssh);
             usleep(500000);
             $stream = stream_get_contents($shell);
             $_SESSION['consola']['salida'] = preg_split('/\r\n|\r|\n/', $stream); //TELITA CON ESTO. SERIA PHP_EOL PERO NO FUNCIONABA
@@ -80,7 +81,7 @@ if(isset($_SESSION['consola']['sesion_iniciada']) && $_SESSION['consola']['sesio
             }
             */
             $orden = 'hostname';
-            $stream = ssh2_exec($conexion_shh, $orden);
+            $stream = ssh2_exec($conexion_ssh, $orden);
             usleep(500000);
             $hostname = stream_get_contents($stream);
             $_SESSION['consola']['hostname'] = preg_split('/\r\n|\r|\n/', $hostname)[0];
@@ -95,9 +96,11 @@ if(isset($_SESSION['consola']['sesion_iniciada']) && $_SESSION['consola']['sesio
         <h1>Conexión SSH</h1>
         <form action="index.php" method="POST">
         Dirección IP:<br>
-        <input type="text" name="ip"><br>
+        <input type="text" name="ip" required><br>
+        Puerto:<br>
+        <input type="number" name="puerto" min="1" max="65535" value="22" required><br>
         Usuario:<br>
-        <input type="text" name="usuario"><br>
+        <input type="text" name="usuario" required><br>
         Contraseña:<br>
         <input type="password" name="pass"><br>
         <input type="hidden" name="servicio" value="ssh">

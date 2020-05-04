@@ -9,6 +9,7 @@
 <form name="ad" action="index.php" method="POST" onclick="enviar('ad')"><span>Active Directory</span><input type="hidden" name="servicio" value="ad"></form>
 <form name="virtualbox" action="index.php" method="POST" onclick="enviar('virtualbox')"><span>Virtualbox</span><input type="hidden" name="servicio" value="virtualbox"></form>
 <form name="ssh" action="index.php" method="POST" onclick="enviar('ssh')"><span>SSH</span><input type="hidden" name="servicio" value="ssh"></form>
+<form name="sftp" action="index.php" method="POST" onclick="enviar('sftp')"><span>SFTP</span><input type="hidden" name="servicio" value="sftp"></form>
 <hr style="width: 90%; margin-right: 10%;">
 <?php
 $lista_paginas = consulta('SELECT * FROM paginas');

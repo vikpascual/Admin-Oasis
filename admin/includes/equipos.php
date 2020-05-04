@@ -55,6 +55,8 @@ if(isset($_POST['actualizar_equipo'])){
         echo "<script>document.getElementById('escaneo').value += 1;</script>";
     }
     echo "<script>enviar('equipos')</script>";
+}elseif(isset($_POST['accion']) && $_POST['accion'] = 'borrar' && filter_var($_POST['ip'], FILTER_VALIDATE_IP)){
+    consulta('DELETE FROM equipos WHERE ip = "'.$_POST['ip'].'"');
 }
 ?>
 <?php
@@ -345,6 +347,12 @@ if(isset($_POST['actualizar_equipo'])){
     });
 
 </script>
+<h1>Eliminar equipo</h1>
+<form action="index.php" method="POST">
+    <input type="hidden" name="servicio" value="equipos"></input>
+    <input type="hidden" name="accion" value="borrar"></input>
+    IP del equipo: <input type="text" name="ip"></input> <input type="submit" value="Borrar"></input>
+</form>
 <footer>
 <?php
 foreach($lista_equipos as $value){

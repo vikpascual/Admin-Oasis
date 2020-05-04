@@ -338,5 +338,17 @@ function actualizar_windows($id_equipo,$id_wmi,$ip){
     consulta("UPDATE equipos SET mac = '$mac', fabricante = '$fabricante',modelo = '$modelo', numero_de_serie = '$num_serie', version = '$os_version',
     procesador = '$cpu', bios = '$bios_version', arquitectura = '$arquitectura', os = 'Windows' WHERE id = $id_equipo");
 }
+function formatBytes($bytes, $precision = 2) { 
+    $units = array('B', 'KB', 'MB', 'GB', 'TB'); 
 
+    $bytes = max($bytes, 0); 
+    $pow = floor(($bytes ? log($bytes) : 0) / log(1024)); 
+    $pow = min($pow, count($units) - 1); 
+
+    // Uncomment one of the following alternatives
+    // $bytes /= pow(1024, $pow);
+    // $bytes /= (1 << (10 * $pow)); 
+
+    return round($bytes, $precision) . ' ' . $units[$pow]; 
+} 
 ?>
