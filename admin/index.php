@@ -8,8 +8,14 @@ ENVIANDO PARCIALMENTE EL CONTENIDO DEL DOCUMENTO HTML CONFORME SE VAYA GENERANDO
 EL PRINCIPAL PROBLEMA DE ESTO ES, QUE EL MOMENTO EN EL QUE SE ENVIA UNA PARTE DEL DOCUMENTO AL NAVEGADOR DEL CLIENTE LA FUNCION HEADER() NO FUNCIONARÁ
 DEBIDO A QUE NO PUEDES ENVIAR EL CONTENIDO Y DESPUES CAMBIAR LA CABECERA. POR ESO ALGUNAS REDIRECCIONES SE HACEN CON JAVASCRIPT.
 */
-ob_implicit_flush(true); // UTILIZO ESTA FUNCION PARA NO USAR LA FUNCION FLUSH() CADA 2 POR 3
-ob_end_flush();// ES NECESARIO DESHABILITARLO
+if(isset($_POST['servicio']) && $_POST['servicio'] != 'descargar' || empty($_POST)){
+    ob_implicit_flush(true); // UTILIZO ESTA FUNCION PARA NO USAR LA FUNCION FLUSH() CADA 2 POR 3
+    ob_end_flush();// ES NECESARIO DESHABILITARLO   
+}else{
+    include 'includes/descargar.php';
+}
+
+
 include 'includes/cabecera.php';
 include 'includes/lateral.php';
 ?>
@@ -27,6 +33,8 @@ if(isset($_POST['servicio']) && $_POST['servicio'] == 'virtualbox'){
     include 'includes/paginas.php';
 }elseif(isset($_POST['servicio']) && $_POST['servicio'] == 'ssh'){
     include 'includes/ssh.php';
+}elseif(isset($_POST['servicio']) && $_POST['servicio'] == 'sftp'){
+    include 'includes/sftp.php';
 }
 
 ?>
