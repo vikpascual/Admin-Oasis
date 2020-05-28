@@ -3,17 +3,18 @@ if(!isset($_SESSION))
 { 
     session_start(); 
 } 
+
 if ($_SESSION['logueado'] != TRUE){
     header('Location: entrar.php');
 }
 if (empty($_SERVER['HTTPS']) || $_SERVER['HTTPS'] === "off") {
     $location = 'https://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
-    header('HTTP/1.1 301 Moved Permanently');
     header('Location: ' . $location);
     exit;
 }
 include 'includes/config/db.php';
 include 'includes/funciones.php';
+
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -24,6 +25,11 @@ include 'includes/funciones.php';
     <title>Admin Oasis</title>
     <link rel="stylesheet" type="text/css" href="css/principal.css">
     <link href="https://fonts.googleapis.com/css?family=Sen&display=swap" rel="stylesheet">
+    <script>
+        function enviar(nombre) {
+            document.forms[nombre].submit();
+        }
+    </script>
 </head>
 <body>
 <header>

@@ -20,13 +20,13 @@ if(isset($_SESSION['consola']['sesion_iniciada']) && $_SESSION['consola']['sesio
         if(isset($_SESSION['consola']['directorio_actual'])){
             $orden = 'cd '.$_SESSION['consola']['directorio_actual'];
             $stream = ssh2_exec($conexion_ssh, $orden);
-            usleep(500000);
+            usleep(100000);
         } else{
             $_SESSION['consola']['directorio_actual'] = '~';
         }
         //orden del usuario
         if(isset($_POST['orden'])){
-            $orden = $_POST['orden'];
+            $orden = limpia($_POST['orden']);
             array_push($_SESSION['consola']['salida'], '<span style="color:#00ff3c">'.$_SESSION['consola']['usuario'].'</span><span style="color:#1155cc">@</span><span style="color:#ffff00">'.$_SESSION['consola']['hostname'].'</span>:<span style="color:#1155cc">'.$_SESSION['consola']['directorio_actual'].'$ </span>'.$orden);
             if(substr($orden, 0, 3) == 'cd '){
                 $orden_directorio = $orden.'; pwd';

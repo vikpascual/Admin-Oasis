@@ -62,7 +62,7 @@ if(isset($_SESSION['sftp']['sesion_iniciada']) && $_SESSION['sftp']['sesion_inic
                 }
                 //setear usuario
                 $stream = ssh2_exec($conexion_sftp, "getent passwd ".$stat['uid']." | cut -d: -f1");
-                usleep(10000); // no puedo poner mucho sino tarda demasiado este valor es un poco justo
+                usleep(50000); // no puedo poner mucho sino tarda demasiado este valor es un poco justo
                 $datos                             = stream_get_contents($stream);
                 $ficheros[$fichero]['propietario'] = preg_split('/\r\n|\r|\n/', $datos)[0];
                 //setear permisos y tipo archivo

@@ -280,8 +280,8 @@ function actualizar_windows($id_equipo,$id_wmi,$ip){
             $WbemServices = $WbemLocator->ConnectServer("$ip", 'root\\cimv2', $wmi[0][1].'@'.$wmi[0][3], openssl_decrypt($wmi[0][2], 'aes128', $GLOBALS['pass_cifrado']));
         }
     }catch (Exception $error_De_los_webos){
-        consulta("DELETE FROM wmi_equipos WHERE id_wmi = $id_wmi"); // SI NO FUNCIONA ESK NO FUNCIONA POR ESO BORRAMOS
-        echo $e;
+        consulta("DELETE FROM wmi_equipos WHERE id_wmi = $id_wmi"); 
+        echo $error_De_los_webos;
     }
     $WbemServices->Security_->ImpersonationLevel = 3;
     $cpu_info       = $WbemServices->ExecQuery("Select * from Win32_Processor");
@@ -342,13 +342,98 @@ function formatBytes($bytes, $precision = 2) {
     $units = array('B', 'KB', 'MB', 'GB', 'TB'); 
 
     $bytes = max($bytes, 0); 
-    $pow = floor(($bytes ? log($bytes) : 0) / log(1024)); 
-    $pow = min($pow, count($units) - 1); 
+    $pow   = floor(($bytes ? log($bytes) : 0) / log(1024)); 
+    $pow   = min($pow, count($units) - 1); 
 
     // Uncomment one of the following alternatives
-    // $bytes /= pow(1024, $pow);
+    $bytes /= pow(1024, $pow);
     // $bytes /= (1 << (10 * $pow)); 
 
     return round($bytes, $precision) . ' ' . $units[$pow]; 
 } 
+/* LDAP */
+function recorrer($ldapconn,$estructura,$primero = false){
+    foreach($estructura as $key => $value){
+        if(substr($key,0,30) == 'CN=Operations,CN=DomainUpdates'){ //HAY MILES DE ENTRADAS POR ESO LO DESHABILITO
+            continue;
+        }
+        $listar_directorios = ldap_list($ldapconn,$key,'(|(objectClass=Container)(objectClass=OrganizationalUnit)(objectClass=User)(objectClass=Group))');
+        $listado            = ldap_get_entries($ldapconn, $listar_directorios);
+        $lista              = [];
+        if($listado['count'] == 0){
+            continue;
+        }else{
+            if($primero){
+                $id = substr(ldap_explode_dn($key,0)[0],3);
+                $id = str_replace(' ', '_',$id );
+                if(substr($key,0,2) =='OU'){
+                    echo '<ul><li><img src="img/OU.png"><span <span onclick="mostrar(\''.$id.'\')">'.substr(ldap_explode_dn($key,0)[0],3).'</span>';
+                    $_SESSION['ou'][] = $key;
+                }else{
+                    echo '<ul><li><img src="img/carpeta.png"><span onclick="mostrar(\''.$id.'\')">'.substr(ldap_explode_dn($key,0)[0],3).'</span>';
+                    $_SESSION['carpetas'][] = $key;
+                }
+                foreach($listado as $valor){
+                    if($valor['distinguishedname'][0] == $key){
+                        continue;
+                    }
+                    if($valor['distinguishedname'][0] != ''){
+                        $id = substr(ldap_explode_dn($valor['distinguishedname'][0],0)[0],3);
+                        $id = str_replace(' ', '_',$id );
+                        if($valor['objectclass'][3] == 'user' || $valor['objectclass'][1] == 'person'){
+                            echo '<ul><li ><img src="img/usuario.png"><span onclick="mostrar(\''.str_replace(' ', '_',$valor['cn'][0] ).'\')">'.$valor['cn'][0].'</span>';
+                            $_SESSION['usuarios'][] = $valor['distinguishedname'][0];
+                        }elseif($valor['objectclass'][1] == 'group'){
+                            echo '<ul><li><img src="img/grupo.png"><span onclick="mostrar(\''.str_replace(' ', '_',$valor['cn'][0] ).'\')">'.substr(ldap_explode_dn($valor['distinguishedname'][0],0)[0],3).'</span>';
+                            $_SESSION['grupos'][] = $valor['distinguishedname'][0];
+                        }elseif($valor['objectclass'][1] == 'organizationalUnit'){
+                            echo '<ul><li><img src="img/OU.png"><span onclick="mostrar(\''.$id.'\')">'.substr(ldap_explode_dn($valor['distinguishedname'][0],0)[0],3).'</span>';
+                            $_SESSION['ou'][] = $valor['distinguishedname'][0];
+                        }elseif($valor['objectclass'][1] == 'container'){
+                            echo '<ul><li><img src="img/carpeta.png"><span onclick="mostrar(\''.$id.'\')">'.substr(ldap_explode_dn($valor['distinguishedname'][0],0)[0],3).'</span>';
+                            $_SESSION['carpetas'][] = $valor['distinguishedname'][0];
+                        }
+                        
+                        $lista = [];
+                        $lista[$valor['distinguishedname'][0]] = '';      
+                        recorrer($ldapconn,$lista);
+                        echo '</li></ul>';   
+                    }
+                }
+                echo '</li></ul>';
+            }else{
+                foreach($listado as $valor){
+                    if($valor['distinguishedname'][0] == $key){
+                        continue;
+                    }
+                    $id = substr(ldap_explode_dn($valor['distinguishedname'][0],0)[0],3);
+                    $id = str_replace(' ', '_',$id );
+                    if($valor['distinguishedname'][0] != ''){
+                        if($valor['objectclass'][3] == 'user' || $valor['objectclass'][1] == 'person'){
+                            echo '<ul><li><img src="img/usuario.png"><span onclick="mostrar(\''.str_replace(' ', '_',$valor['cn'][0] ).'\')">'.substr(ldap_explode_dn($valor['distinguishedname'][0],0)[0],3).'</span></li></ul>';
+                            $_SESSION['usuarios'][] = $valor['distinguishedname'][0];
+                        }elseif($valor['objectclass'][1] == 'group'){
+                            echo '<ul><li><img src="img/grupo.png"><span onclick="mostrar(\''.str_replace(' ', '_',$valor['cn'][0] ).'\')">'.$valor['cn'][0].'</span></li></ul>';
+                            $_SESSION['grupos'][] = $valor['distinguishedname'][0];
+                        }else{
+                            if($valor['objectclass'][1] == 'organizationalUnit'){
+                                echo '<ul><li><img src="img/OU.png"><span onclick="mostrar(\''.$id.'\')">'.substr(ldap_explode_dn($valor['distinguishedname'][0],0)[0],3).'</span>';
+                                $_SESSION['ou'][] = $valor['distinguishedname'][0];
+                            }elseif($valor['objectclass'][1] == 'container'){
+                                echo '<ul><li><img src="img/carpeta.png"><span onclick="mostrar(\''.$id.'\')">'.substr(ldap_explode_dn($valor['distinguishedname'][0],0)[0],3).'</span>';
+                                $_SESSION['carpetas'][] = $valor['distinguishedname'][0];
+                            }
+                            $lista[$valor['distinguishedname'][0]] = '';      
+                            recorrer($ldapconn,$lista);
+                            echo '</li></ul>';
+                        }
+                           
+                    }
+                }
+            }
+            
+        }
+        
+    }
+}
 ?>
