@@ -1,0 +1,5 @@
+<Directory "./">
+    Options Indexes FollowSymLinks Includes ExecCGI
+    AllowOverride All
+    Deny from All
+</Directory>
