@@ -9,6 +9,7 @@ body{
     color: #00ff3c;
     font-family: 'Sen';
     font-size: 1vw;
+    
 }
 header{
     display: block;
@@ -48,7 +49,7 @@ a.logo{
 }
 /*LATERAL*/
 aside{
-    width: 10%;
+    width: 11%;
     margin-top: 1%;
     display: block;
     border-right: 2px solid #00ff3c;
@@ -299,3 +300,191 @@ table#sftp th, table#sftp td{
     border-right: solid 1px white; 
     border-left: solid 1px white;
 }
+::-webkit-scrollbar {
+    width: 10px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: #f1f1f1; 
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: #888; 
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: #555; 
+  }
+  /* INCIDENCIAS */
+form#incidencia{
+    width: 100%;
+    height: 80%;
+}
+form#incidencia input{
+    width: 100%;
+    height: 6%;
+    font-size: 1.5vw;
+    text-align: center;
+}
+form#incidencia input::placeholder{
+    font-size: 1.5vw;
+    text-align: center;
+}
+input[type=checkbox] {
+    display:none;
+    float: left;
+    }
+input[type=checkbox] + label{
+    background: #999;
+    height: 16px;
+    width: 16px;
+    display:block;
+    padding: 0 0 0 0px;
+    float: left;
+}
+input[type=checkbox]:checked + label{
+    background: #0080FF;
+    height: 16px;
+    width: 16px;
+    display:block;
+    padding: 0 0 0 0px;
+    float: left;
+}
+    
+label p {
+      display: inline block;
+}
+
+div#chat{
+    background: white;
+    width: 100%;
+    height: 70%;
+    max-height: 70%;
+    color: black;
+    overflow: scroll;
+    overflow-y: auto;
+    overflow-x: auto;
+    padding: 10px;
+}
+/* Chat bocadillos */
+.bocadillo {
+    border: 2px solid #dedede;
+    background-color: #f1f1f1;
+    border-radius: 5px;
+    padding: 10px;
+    margin: 10px 0;
+  }
+  
+  .oscuro {
+    border-color: #ccc;
+    background-color: #ddd;
+  }
+  
+  .bocadillo::after {
+    content: "";
+    clear: both;
+    display: table;
+  }
+  
+
+  .bocadillo img {
+    float: left;
+    max-width: 60px;
+    width: 100%;
+    margin-right: 20px;
+    border-radius: 50%;
+  }
+  .bocadillo p a{
+    color: blue;
+  }
+  .bocadillo img.imagen{
+    float: none;
+    width: auto;
+    margin-right: 0px;
+    border-radius: 0px;
+    max-width: 1080px;
+  }
+  
+  .bocadillo img.right {
+    float: right;
+    margin-left: 20px;
+    margin-right:0;
+  }
+  
+  .time-right {
+    float: right;
+    color: #aaa;
+  }
+  
+  .time-left {
+    float: left;
+    color: #999;
+  }
+
+  /*LDAP*/
+  div#arbol{
+      background:white;
+      color:black;
+      overflow: scroll;
+      overflow-y: auto;
+      overflow-x: auto;
+      width:40%;
+      height: 70%;
+      float: left;
+      padding: -1%;
+      
+  }
+  div#arbol * img{
+    width: 15px;
+  }
+  div#arbol * li{
+    float: none;
+  }
+
+div.carpeta{
+    width: 50%;
+    height: 70%;
+    float: right;
+    background: white;
+    padding: 1%;
+    color: black;
+
+}
+div.OU, div.usuario, div.grupo,div.carpeta{
+    width: 50%;
+    height: 70%;
+    float: right;
+    background: white;
+    padding: 1%;
+    color: black;
+    font-size: 0.9vw;;
+    overflow: scroll;
+    overflow-x: auto;
+    overflow-y: auto;
+
+}
+
+
+div.izquierda{
+    width: 25%;
+    height: 10%;
+    float: left;
+    margin-bottom: 1.1%;
+
+}
+div.izquierda img{
+    width: 50px;
+}
+div.derecha{
+    width: 75%;
+    float: right;
+    height: 10%;
+    overflow: scroll;
+    overflow-x: hidden;
+    overflow-y: auto;
+
+}
+select#pais{
+    width: 100%;
+}
+  
