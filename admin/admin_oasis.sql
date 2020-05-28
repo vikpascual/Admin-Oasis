@@ -1,3 +1,12 @@
+-- phpMyAdmin SQL Dump
+-- version 4.9.1
+-- https://www.phpmyadmin.net/
+--
+-- Servidor: 127.0.0.1
+-- Tiempo de generación: 28-05-2020 a las 12:44:40
+-- Versión del servidor: 10.4.8-MariaDB
+-- Versión de PHP: 7.3.10
+
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET AUTOCOMMIT = 0;
 START TRANSACTION;
@@ -40,6 +49,17 @@ CREATE TABLE `comunidades` (
 CREATE TABLE `comunidades_equipos` (
   `id_comunidad` int(11) NOT NULL,
   `id_equipo` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `destinatarios_incidencias`
+--
+
+CREATE TABLE `destinatarios_incidencias` (
+  `id_incidencia` int(11) NOT NULL,
+  `id_destinatario` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
@@ -90,6 +110,45 @@ CREATE TABLE `equipos` (
 -- --------------------------------------------------------
 
 --
+-- Estructura de tabla para la tabla `incidencias`
+--
+
+CREATE TABLE `incidencias` (
+  `id` int(11) NOT NULL,
+  `titulo` tinytext NOT NULL,
+  `estado` varchar(11) NOT NULL,
+  `fecha` timestamp NOT NULL DEFAULT current_timestamp(),
+  `remitente` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `mensajes`
+--
+
+CREATE TABLE `mensajes` (
+  `id` int(11) NOT NULL,
+  `contenido` text NOT NULL,
+  `fecha` timestamp NOT NULL DEFAULT current_timestamp(),
+  `usuario` int(11) NOT NULL,
+  `incidencia` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `paginas`
+--
+
+CREATE TABLE `paginas` (
+  `nombre` varchar(50) NOT NULL,
+  `link` varchar(200) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- --------------------------------------------------------
+
+--
 -- Estructura de tabla para la tabla `servicios`
 --
 
@@ -107,9 +166,19 @@ CREATE TABLE `servicios` (
 --
 
 CREATE TABLE `usuario` (
+  `id` int(11) NOT NULL,
   `usuario` varchar(255) NOT NULL,
-  `password` char(40) NOT NULL
+  `password` char(40) NOT NULL,
+  `tipo_usuario` varchar(20) DEFAULT NULL,
+  `ultima_sesion` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Volcado de datos para la tabla `usuario`
+--
+
+INSERT INTO `usuario` (`id`, `usuario`, `password`, `tipo_usuario`, `ultima_sesion`) VALUES
+(1, 'admin', 'af7e0928fcba501d8ed0385c794e690fe151bf16', 'Administrador', '2020-05-26 12:02:39');
 
 -- --------------------------------------------------------
 
@@ -153,6 +222,13 @@ ALTER TABLE `comunidades_equipos`
   ADD KEY `id_equipo` (`id_equipo`);
 
 --
+-- Indices de la tabla `destinatarios_incidencias`
+--
+ALTER TABLE `destinatarios_incidencias`
+  ADD KEY `id_incidencia` (`id_incidencia`),
+  ADD KEY `id_destinatario` (`id_destinatario`);
+
+--
 -- Indices de la tabla `discos`
 --
 ALTER TABLE `discos`
@@ -167,16 +243,38 @@ ALTER TABLE `equipos`
   ADD UNIQUE KEY `ip` (`ip`);
 
 --
+-- Indices de la tabla `incidencias`
+--
+ALTER TABLE `incidencias`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `remitente` (`remitente`);
+
+--
+-- Indices de la tabla `mensajes`
+--
+ALTER TABLE `mensajes`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `usuario` (`usuario`),
+  ADD KEY `incidencia` (`incidencia`);
+
+--
+-- Indices de la tabla `paginas`
+--
+ALTER TABLE `paginas`
+  ADD PRIMARY KEY (`nombre`);
+
+--
 -- Indices de la tabla `servicios`
 --
 ALTER TABLE `servicios`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `ip` (`ip`);
 
 --
 -- Indices de la tabla `usuario`
 --
 ALTER TABLE `usuario`
-  ADD PRIMARY KEY (`usuario`);
+  ADD PRIMARY KEY (`id`);
 
 --
 -- Indices de la tabla `wmi`
@@ -208,10 +306,28 @@ ALTER TABLE `equipos`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT de la tabla `incidencias`
+--
+ALTER TABLE `incidencias`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT de la tabla `mensajes`
+--
+ALTER TABLE `mensajes`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT de la tabla `servicios`
 --
 ALTER TABLE `servicios`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT de la tabla `usuario`
+--
+ALTER TABLE `usuario`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT de la tabla `wmi`
@@ -231,10 +347,36 @@ ALTER TABLE `comunidades_equipos`
   ADD CONSTRAINT `equipos` FOREIGN KEY (`id_equipo`) REFERENCES `equipos` (`id`) ON DELETE CASCADE;
 
 --
+-- Filtros para la tabla `destinatarios_incidencias`
+--
+ALTER TABLE `destinatarios_incidencias`
+  ADD CONSTRAINT `destinatarios_incidencias_ibfk_1` FOREIGN KEY (`id_incidencia`) REFERENCES `incidencias` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `destinatarios_incidencias_ibfk_2` FOREIGN KEY (`id_destinatario`) REFERENCES `usuario` (`id`) ON DELETE CASCADE ON UPDATE NO ACTION;
+
+--
 -- Filtros para la tabla `discos`
 --
 ALTER TABLE `discos`
   ADD CONSTRAINT `discos_ibfk_1` FOREIGN KEY (`id_equipo`) REFERENCES `equipos` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Filtros para la tabla `incidencias`
+--
+ALTER TABLE `incidencias`
+  ADD CONSTRAINT `incidencias_ibfk_1` FOREIGN KEY (`remitente`) REFERENCES `usuario` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+--
+-- Filtros para la tabla `mensajes`
+--
+ALTER TABLE `mensajes`
+  ADD CONSTRAINT `mensajes_ibfk_1` FOREIGN KEY (`usuario`) REFERENCES `usuario` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  ADD CONSTRAINT `mensajes_ibfk_2` FOREIGN KEY (`incidencia`) REFERENCES `incidencias` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Filtros para la tabla `servicios`
+--
+ALTER TABLE `servicios`
+  ADD CONSTRAINT `servicios_ibfk_1` FOREIGN KEY (`ip`) REFERENCES `equipos` (`ip`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Filtros para la tabla `wmi_equipos`
